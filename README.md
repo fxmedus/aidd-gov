@@ -38,6 +38,22 @@ The specification defines **what** must be recorded. It does not prescribe **how
 3. Implement schemas appropriate to your conformance level
 4. Produce a compliance self-assessment mapping your artifacts to AIDD-GOV schemas
 
+## FDA Regulatory Alignment
+
+AIDD-GOV implements the principles of the FDA's January 2025 draft guidance *"Considerations for the Use of Artificial Intelligence to Support Regulatory Decision-Making for Drug and Biological Products"* (Docket FDA-2024-D-4689). The FDA's 7-step credibility assessment framework maps to AIDD-GOV constructs:
+
+| FDA Step | AIDD-GOV Construct |
+|----------|-------------------|
+| 1. Define context of use | Campaign binding + target registry |
+| 2. Assess model risk | Kill conditions + constraint policies |
+| 3. Credibility assessment plan | Stage gate plan + IVVP selection |
+| 4. Execute assessment | Dual-attestation pipeline (SDR) |
+| 5. Document results | Immutable audit trail (WAL) |
+| 6. Review and communicate | Compliance reports + handoff packages |
+| 7. Lifecycle monitoring | Curation policy + reward versioning |
+
+Full guidance PDF: https://www.fda.gov/media/167973/download
+
 ## Reference Implementation
 
 [DrugSynthAI](https://github.com/fxmedus/drugsynth-ai) implements AIDD-GOV Level 3 (Full) across three governed discovery campaigns. See the companion publication for details.
