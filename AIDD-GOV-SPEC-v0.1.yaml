@@ -1,0 +1,857 @@
+# =============================================================================
+# AIDD-GOV: AI Drug Discovery Governance Specification
+# Version: 0.1 (Draft)
+# Status: Public Draft for Community Review
+# License: Apache License 2.0 (specification text)
+# Patent Notice: Implementation systems may be subject to patent protection.
+#   See PATENT-NOTICE.md for details.
+# Author: Julian Borges, MD — FxMEDUS LLC / Boston University
+# Date: 2026-03-29
+# ORCID: 0009-0001-9929-3135
+# Contact: jyborges@bu.edu
+# Repository: https://github.com/fxmedus/aidd-gov
+# Companion Paper: "DrugSynthAI: A Governance-First Platform for AI-Governed
+#   Drug Discovery" (Borges 2026) — SSRN / bioRxiv [DOI pending]
+# =============================================================================
+#
+# PURPOSE
+# -------
+# This specification defines a machine-readable governance standard for
+# AI-driven drug discovery pipelines. It prescribes schemas for decision
+# records, stage gates, constraint policies, reward architectures, audit
+# trails, convergence criteria, and kill switches.
+#
+# SCOPE
+# -----
+# AIDD-GOV defines WHAT must be recorded, not HOW it is computed.
+# Implementations may use any algorithm, model, or scoring function.
+# The standard requires that governance artifacts conform to these schemas
+# so that regulators, auditors, and collaborators can evaluate pipeline
+# decisions without access to proprietary methods.
+#
+# CONFORMANCE LEVELS
+# ------------------
+# Level 1 (Core):     StageDecisionRecord + AuditEvent + StageGatePipeline
+# Level 2 (Standard): Level 1 + ConstraintPolicy + RewardArchitecture + ConvergenceCriteria
+# Level 3 (Full):     Level 2 + KillSwitch + ToxicityAlerts + ExclusionZones + ObjectiveDefinitions
+#
+# VERSIONING
+# ----------
+# This specification follows Semantic Versioning (semver.org).
+# Minor versions (0.x) are draft and may contain breaking changes.
+# Major version 1.0 will be the first stable release.
+#
+# TERMINOLOGY
+# -----------
+# "MUST" / "REQUIRED": Mandatory for the stated conformance level.
+# "SHOULD" / "RECOMMENDED": Best practice; deviations require justification.
+# "MAY" / "OPTIONAL": Entirely at the implementer's discretion.
+# =============================================================================
+
+specification:
+  name: "AIDD-GOV"
+  full_name: "AI Drug Discovery Governance Standard"
+  version: "0.1"
+  status: "public_draft"
+  release_date: "2026-03-29"
+  maintainer: "FxMEDUS LLC"
+  license: "Apache-2.0"
+  conformance_levels:
+    - level: 1
+      name: "Core"
+      required_schemas: ["StageDecisionRecord", "AuditEvent", "StageGatePipeline"]
+    - level: 2
+      name: "Standard"
+      required_schemas: ["StageDecisionRecord", "AuditEvent", "StageGatePipeline",
+                         "ConstraintPolicy", "RewardArchitecture", "ConvergenceCriteria"]
+    - level: 3
+      name: "Full"
+      required_schemas: ["StageDecisionRecord", "AuditEvent", "StageGatePipeline",
+                         "ConstraintPolicy", "RewardArchitecture", "ConvergenceCriteria",
+                         "KillSwitch", "ToxicityAlerts", "ExclusionZones", "ObjectiveDefinitions"]
+
+# =============================================================================
+# SCHEMA 1: StageDecisionRecord (SDR)
+# =============================================================================
+# The atomic unit of governance. Every stage gate decision MUST produce
+# exactly one SDR. SDRs are immutable once issued. Corrections require
+# a new SDR referencing the original.
+# Conformance: Level 1 (Core) — REQUIRED
+# =============================================================================
+
+schemas:
+
+  StageDecisionRecord:
+    conformance_level: 1
+    description: >
+      Immutable record of a stage gate decision. Issued by the platform
+      governance layer. No downstream pipeline consumption is permitted
+      without a passing SDR for the current stage.
+    fields:
+      sdr_id:
+        type: string
+        format: "Unique identifier. RECOMMENDED format: SDR-NNNN (sequential)"
+        required: true
+        description: "Globally unique identifier for this decision record."
+      issued_by:
+        type: string
+        required: true
+        description: >
+          Identifier of the governance component that issued this SDR.
+          MUST be a platform-level authority, never a domain agent.
+      timestamp:
+        type: string
+        format: "ISO 8601 (UTC). Example: 2026-03-29T14:30:00Z"
+        required: true
+        description: "UTC timestamp of SDR issuance."
+      campaign_id:
+        type: string
+        required: true
+        description: "Identifier of the campaign this decision belongs to."
+      stage_id:
+        type: string
+        required: true
+        description: >
+          Identifier of the pipeline stage evaluated. RECOMMENDED format:
+          S00, S01, ..., S10 (or domain-appropriate naming).
+      agent_evaluated:
+        type: string
+        required: true
+        description: "Identifier of the agent whose output was evaluated at this gate."
+      decision:
+        type: enum
+        values: ["PASS", "FAIL", "CONDITIONAL_PASS"]
+        required: true
+        description: >
+          Outcome of the stage gate evaluation. PASS allows downstream
+          consumption. FAIL halts the pipeline. CONDITIONAL_PASS allows
+          continuation with documented caveats.
+      criteria_results:
+        type: array
+        required: true
+        description: >
+          List of individual criterion evaluations that informed the decision.
+          Each entry MUST include criterion name, result value, and pass/fail.
+        items:
+          criterion:
+            type: string
+            description: "Name or ID of the evaluated criterion."
+          result:
+            type: string
+            description: "Observed value or outcome for this criterion."
+          passed:
+            type: boolean
+            description: "Whether this individual criterion was satisfied."
+      snapshot_hash:
+        type: string
+        format: "SHA-256 hex digest"
+        required: false
+        description: >
+          Cryptographic hash of the input data snapshot at evaluation time.
+          RECOMMENDED for integrity verification. Enables tamper detection.
+      notes:
+        type: string
+        required: false
+        description: "Free-text annotation. Used for CONDITIONAL_PASS justifications."
+    integrity:
+      checksum:
+        type: string
+        format: "SHA-256 hex digest of the SDR content (excluding checksum field)"
+        required: true
+        description: >
+          Computed over the JSON-serialized SDR (keys sorted, checksum excluded).
+          Enables post-hoc integrity verification. MUST be computed at issuance
+          and MUST NOT be modified thereafter.
+      ledger_index:
+        type: integer
+        required: true
+        description: "Sequential position in the campaign's SDR ledger. Zero-indexed."
+      formalized_at:
+        type: string
+        format: "ISO 8601 (UTC)"
+        required: true
+        description: "Timestamp when the SDR was formalized into the ledger."
+    immutability_rule: >
+      Once an SDR is issued and formalized, it MUST NOT be modified, deleted,
+      or overwritten. Corrections MUST be issued as new SDRs referencing the
+      original sdr_id in the notes field.
+
+# =============================================================================
+# SCHEMA 2: AuditEvent
+# =============================================================================
+# Every significant pipeline action MUST produce an AuditEvent.
+# Conformance: Level 1 (Core) — REQUIRED
+# =============================================================================
+
+  AuditEvent:
+    conformance_level: 1
+    description: >
+      Structured record of a pipeline action. Emitted by the platform audit
+      layer for every stage transition, artifact creation, policy enforcement,
+      and security event. Audit events are append-only.
+    fields:
+      event_id:
+        type: string
+        format: "UUID v4"
+        required: true
+        description: "Globally unique event identifier."
+      timestamp:
+        type: string
+        format: "ISO 8601 (UTC)"
+        required: true
+      run_id:
+        type: string
+        required: true
+        description: "Identifier of the pipeline run that produced this event."
+      campaign_id:
+        type: string
+        required: true
+      stage_id:
+        type: string
+        required: true
+        description: "Pipeline stage active when this event was emitted."
+      category:
+        type: enum
+        values: ["stage", "job", "artifact", "policy", "security", "rl"]
+        required: true
+        description: >
+          Classification of the event. Implementations MAY extend this enum
+          with domain-specific categories.
+      action:
+        type: string
+        required: true
+        description: >
+          Specific action that occurred. Examples: stage_started, stage_passed,
+          stage_failed, artifact_created, kill_switch_triggered, run_completed.
+      actor:
+        type: string
+        required: true
+        description: >
+          Identifier of the agent or platform component that performed the action.
+      details:
+        type: object
+        required: false
+        description: >
+          Structured payload with action-specific data. Schema varies by action
+          type. Implementations SHOULD document the payload schema for each
+          action code.
+    platform_event_types:
+      description: >
+        RECOMMENDED platform event type identifiers for SDK consumers.
+        Domain applications subscribe to these event types via the platform
+        event bus.
+      events:
+        - "DSA.STAGE.STARTED"
+        - "DSA.STAGE.SUBMITTED"
+        - "DSA.STAGE.PASSED"
+        - "DSA.STAGE.FAILED"
+        - "DSA.ARTIFACT.CREATED"
+        - "DSA.POLICY.KILL_SWITCH"
+        - "DSA.RUN.STARTED"
+        - "DSA.RUN.COMPLETED"
+    storage_rule: >
+      Audit events MUST be stored in an append-only data store. Deletion
+      of audit records is prohibited. Implementations SHOULD support
+      retention policies that archive rather than delete.
+
+# =============================================================================
+# SCHEMA 3: StageGatePipeline
+# =============================================================================
+# Defines the ordered sequence of pipeline stages with entry/exit criteria.
+# Conformance: Level 1 (Core) — REQUIRED
+# =============================================================================
+
+  StageGatePipeline:
+    conformance_level: 1
+    description: >
+      Ordered sequence of pipeline stages. Each stage has defined entry
+      criteria, an executing agent, and exit criteria enforced by the
+      governance layer. No stage may be skipped. No stage may execute
+      without a passing SDR from the previous stage (except S00).
+    fields:
+      pipeline_id:
+        type: string
+        required: true
+        description: "Unique identifier for this pipeline definition."
+      version:
+        type: string
+        required: true
+        description: "Semantic version of this pipeline definition."
+      stages:
+        type: array
+        required: true
+        description: "Ordered list of pipeline stages."
+        items:
+          stage_id:
+            type: string
+            required: true
+            description: "Stage identifier. RECOMMENDED: S00, S01, ..., SNN."
+          name:
+            type: string
+            required: true
+            description: "Human-readable stage name."
+          purpose:
+            type: string
+            required: true
+            description: "One-sentence description of what this stage accomplishes."
+          entry_criteria:
+            type: array
+            required: true
+            description: >
+              Conditions that MUST be satisfied before the stage can begin.
+              S00 MAY have no entry criteria. All other stages MUST require
+              a passing SDR from the immediately preceding stage.
+          exit_criteria:
+            type: array
+            required: true
+            description: >
+              Conditions evaluated at the stage gate. Produce the SDR.
+          executing_agent:
+            type: string
+            required: true
+            description: "Agent or component responsible for this stage's work."
+          artifacts_produced:
+            type: array
+            required: false
+            description: "List of artifact types this stage generates."
+    governance_rules:
+      no_skip: >
+        Stages MUST execute in declared order. No stage may be bypassed.
+      sdr_gating: >
+        Except for S00 (campaign initialization), every stage MUST have
+        a passing SDR from the immediately preceding stage before execution.
+      platform_authority: >
+        SDRs are issued exclusively by the platform governance layer.
+        Domain agents and application code MUST NOT issue or modify SDRs.
+    reference_pipeline:
+      description: >
+        A RECOMMENDED reference pipeline for small-molecule drug discovery.
+        Implementations MAY define different stages appropriate to their domain
+        (biologics, peptides, gene therapy) while maintaining the governance
+        invariants above.
+      stages:
+        - {stage_id: "S00", name: "Campaign Initialization", purpose: "Define targets, constraints, objectives; governance pre-check"}
+        - {stage_id: "S01", name: "Target Selection", purpose: "Select and validate biological targets from registry"}
+        - {stage_id: "S02", name: "Structure Analysis", purpose: "Analyze binding pockets and structural features"}
+        - {stage_id: "S03", name: "Fragment Selection", purpose: "Select molecular fragments from curated library"}
+        - {stage_id: "S04", name: "Analog Expansion", purpose: "Generate candidate molecules from fragments"}
+        - {stage_id: "S05", name: "Molecular Docking", purpose: "Compute binding affinity predictions"}
+        - {stage_id: "S06", name: "ADMET Profiling", purpose: "Evaluate absorption, distribution, metabolism, excretion, toxicity"}
+        - {stage_id: "S07", name: "Novelty Screening", purpose: "Assess structural novelty vs known compounds"}
+        - {stage_id: "S08", name: "Multi-Objective Scoring", purpose: "Score candidates across all objectives; RL optimization"}
+        - {stage_id: "S09", name: "Packaging", purpose: "Compile RL convergence trace and final rankings"}
+        - {stage_id: "S10", name: "Validation Protocol", purpose: "Nominate top candidates for experimental validation (IVVP)"}
+
+# =============================================================================
+# SCHEMA 4: ConstraintPolicy
+# =============================================================================
+# Defines hard and soft constraints that candidates must satisfy.
+# Conformance: Level 2 (Standard) — REQUIRED
+# =============================================================================
+
+  ConstraintPolicy:
+    conformance_level: 2
+    description: >
+      Defines the constraint regime applied to candidate molecules at
+      stage gates. Hard constraints cause immediate rejection. Soft
+      constraints produce warnings that are logged but do not block.
+      All thresholds MUST be declared before campaign start and MUST
+      NOT be modified mid-campaign.
+    fields:
+      version:
+        type: string
+        required: true
+      status:
+        type: enum
+        values: ["draft", "calibrated", "production"]
+        required: true
+      calibration_source:
+        type: string
+        required: false
+        description: "Campaign ID used for threshold calibration, if applicable."
+      hard_constraints:
+        type: array
+        required: true
+        description: "Constraints that cause immediate candidate rejection."
+        items:
+          id:
+            type: string
+            format: "Unique constraint identifier"
+            required: true
+          name:
+            type: string
+            required: true
+          description:
+            type: string
+            required: true
+          property:
+            type: string
+            required: true
+            description: "Molecular property being constrained (e.g., molecular_weight, logP)."
+          operator:
+            type: enum
+            values: ["<", "<=", "=", "!=", ">", ">=", "in_range", "not_in_set"]
+            required: true
+          threshold:
+            type: number
+            required: true
+            description: "Boundary value for the constraint."
+          units:
+            type: string
+            required: false
+          references:
+            type: array
+            required: false
+            description: "Literature or regulatory references supporting this threshold."
+      soft_constraints:
+        type: array
+        required: false
+        description: "Constraints that produce warnings but do not block advancement."
+        items:
+          id: {type: string, required: true}
+          name: {type: string, required: true}
+          description: {type: string, required: true}
+          property: {type: string, required: true}
+          operator: {type: string, required: true}
+          threshold: {type: number, required: true}
+          units: {type: string, required: false}
+      kill_conditions:
+        type: array
+        required: false
+        description: >
+          Campaign-level termination conditions. If triggered, the entire
+          campaign halts. RECOMMENDED for safety-critical thresholds.
+        items:
+          id:
+            type: string
+            format: "KC-NNN"
+            required: true
+          name: {type: string, required: true}
+          trigger_condition: {type: string, required: true}
+          action: {type: string, required: true, description: "Action taken when triggered (e.g., halt_campaign, quarantine_batch)."}
+          severity: {type: enum, values: ["critical", "high", "medium"], required: true}
+    immutability_rule: >
+      Constraint policies MUST be declared before campaign initialization (S00)
+      and MUST NOT be modified after the campaign begins. Changes require
+      a new campaign with an updated policy version.
+
+# =============================================================================
+# SCHEMA 5: RewardArchitecture
+# =============================================================================
+# Defines the structure of the multi-objective reward function used for
+# reinforcement learning optimization. Declares components and normalization
+# methods. Does NOT prescribe specific weight values — those are
+# implementation-specific and MAY be proprietary.
+# Conformance: Level 2 (Standard) — REQUIRED
+# =============================================================================
+
+  RewardArchitecture:
+    conformance_level: 2
+    description: >
+      Schema for the multi-objective reward function driving RL optimization.
+      Declares reward components, normalization methods, and scaling references.
+      Weight values are implementation-specific and need not be disclosed.
+      The standard requires that the STRUCTURE is documented, not the values.
+    fields:
+      version:
+        type: string
+        required: true
+      status:
+        type: enum
+        values: ["seed", "calibrated", "production"]
+        required: true
+      components:
+        type: array
+        required: true
+        description: >
+          List of reward function components. Each component corresponds to
+          one optimization objective. The sum of all weights MUST equal 1.0.
+        items:
+          component_id:
+            type: string
+            format: "RWD-NNN"
+            required: true
+          objective_id:
+            type: string
+            required: true
+            description: "Reference to the ObjectiveDefinition this component optimizes."
+          name:
+            type: string
+            required: true
+            description: "Human-readable name of this reward component."
+          weight:
+            type: number
+            format: "float in [0, 1]"
+            required: true
+            description: >
+              Relative importance of this component. All weights MUST sum
+              to 1.0 across components. Implementations MAY keep weight
+              values proprietary; the standard requires only that the
+              weight field EXISTS and the sum constraint is documented.
+          normalization:
+            type: enum
+            values: ["min_max", "z_score", "rank", "quantile", "sigmoid", "custom"]
+            required: true
+            description: "Method used to normalize raw scores to [0,1] range."
+          direction:
+            type: enum
+            values: ["maximize", "minimize"]
+            required: true
+          scaling_reference:
+            type: string
+            required: false
+            description: >
+              Reference range or distribution used for normalization.
+              RECOMMENDED for reproducibility.
+      weight_sum_constraint: >
+        The sum of all component weights MUST equal exactly 1.0.
+        Implementations MUST validate this constraint at campaign initialization.
+
+# =============================================================================
+# SCHEMA 6: ConvergenceCriteria
+# =============================================================================
+# Defines when RL optimization terminates.
+# Conformance: Level 2 (Standard) — REQUIRED
+# =============================================================================
+
+  ConvergenceCriteria:
+    conformance_level: 2
+    description: >
+      Pre-specified rules governing when RL optimization terminates.
+      Prevents both premature stopping and unbounded computation.
+      MUST be declared before campaign start and MUST NOT be modified
+      mid-campaign.
+    fields:
+      version:
+        type: string
+        required: true
+      metric:
+        type: string
+        required: true
+        description: >
+          Primary convergence metric (e.g., rolling_mean_reward,
+          pareto_hypervolume, best_candidate_score).
+      plateau_window:
+        type: integer
+        required: true
+        description: "Number of epochs in the rolling window for plateau detection."
+      plateau_threshold:
+        type: number
+        required: true
+        description: >
+          Minimum improvement between consecutive windows to avoid
+          declaring convergence. Below this threshold, optimization stops.
+      statistical_test:
+        type: string
+        required: false
+        description: >
+          Statistical test applied to confirm plateau (e.g., Mann-Whitney U,
+          Wilcoxon signed-rank). RECOMMENDED for robustness.
+      min_epochs:
+        type: integer
+        required: true
+        description: "Minimum number of optimization epochs before convergence check."
+      max_epochs:
+        type: integer
+        required: true
+        description: "Hard upper bound on optimization epochs. Prevents runaway computation."
+      termination_reasons:
+        type: array
+        required: true
+        description: "Enumeration of valid termination reasons for audit trail."
+        items: {type: string}
+        recommended_values:
+          - "convergence_reached"
+          - "max_epochs_exhausted"
+          - "kill_condition_triggered"
+          - "manual_halt"
+          - "resource_limit"
+    immutability_rule: >
+      Convergence criteria MUST be locked at campaign initialization.
+      Mid-campaign modification is prohibited. The termination reason
+      MUST be recorded in the campaign's audit trail.
+
+# =============================================================================
+# SCHEMA 7: ObjectiveDefinitions
+# =============================================================================
+# Defines the multi-objective scoring function components.
+# Conformance: Level 3 (Full) — REQUIRED
+# =============================================================================
+
+  ObjectiveDefinitions:
+    conformance_level: 3
+    description: >
+      Defines each optimization objective in the multi-objective scoring
+      function. Each objective maps to a molecular property, a normalization
+      method, and a weight in the composite score. Weights MUST sum to 1.0.
+    fields:
+      version: {type: string, required: true}
+      objectives:
+        type: array
+        required: true
+        items:
+          id:
+            type: string
+            format: "OBJ-NNN"
+            required: true
+          name: {type: string, required: true}
+          description: {type: string, required: true}
+          property:
+            type: string
+            required: true
+            description: "Molecular property scored (e.g., binding_affinity, admet_composite)."
+          direction:
+            type: enum
+            values: ["maximize", "minimize"]
+            required: true
+          weight:
+            type: number
+            format: "float in [0, 1]; all weights MUST sum to 1.0"
+            required: true
+          normalization:
+            type: string
+            required: true
+            description: "Normalization method (e.g., linear_min_max, z_score)."
+          normalization_min: {type: number, required: false}
+          normalization_max: {type: number, required: false}
+          data_source:
+            type: string
+            required: false
+            description: "Agent or data file that produces this property's raw values."
+
+# =============================================================================
+# SCHEMA 8: ToxicityAlerts
+# =============================================================================
+# Structural alert rules for toxicity screening.
+# Conformance: Level 3 (Full) — REQUIRED
+# =============================================================================
+
+  ToxicityAlerts:
+    conformance_level: 3
+    description: >
+      Registry of structural alert rules applied at ADMET profiling stages.
+      Each alert defines a substructure pattern (SMARTS or equivalent) and
+      a disposition (hard_block or soft_flag).
+    fields:
+      version: {type: string, required: true}
+      total_alerts: {type: integer, required: true}
+      categories:
+        type: array
+        required: true
+        description: >
+          Alert categories (e.g., pains, brenk, reactive_metabolite,
+          herg_pharmacophore, hepatotoxicity, ames_mutagenicity).
+      alerts:
+        type: array
+        required: true
+        items:
+          alert_id: {type: string, required: true}
+          name: {type: string, required: true}
+          category: {type: string, required: true}
+          pattern:
+            type: string
+            required: true
+            description: "Substructure pattern in SMARTS notation or equivalent."
+          disposition:
+            type: enum
+            values: ["hard_block", "soft_flag"]
+            required: true
+            description: >
+              hard_block: candidate rejected immediately.
+              soft_flag: warning logged, candidate proceeds with annotation.
+          references:
+            type: array
+            required: false
+            description: "Literature references supporting this alert rule."
+      primary_sources:
+        type: array
+        required: false
+        description: >
+          Literature references for the alert rule collection as a whole.
+          RECOMMENDED: cite foundational PAINS and Brenk filter publications.
+
+# =============================================================================
+# SCHEMA 9: ExclusionZones
+# =============================================================================
+# Patent and IP exclusion zones in chemical space.
+# Conformance: Level 3 (Full) — REQUIRED
+# =============================================================================
+
+  ExclusionZones:
+    conformance_level: 3
+    description: >
+      Defines regions of chemical space that candidates must avoid due to
+      existing patent claims or IP restrictions. Each zone specifies a
+      structural scaffold, substituent constraints, and the patent reference.
+    fields:
+      version: {type: string, required: true}
+      status:
+        type: enum
+        values: ["schema_only", "populated", "validated"]
+        required: true
+      entries:
+        type: array
+        required: false
+        description: "List of exclusion zones. MAY be empty if no patents apply."
+        items:
+          zone_id: {type: string, format: "EZ-NNN", required: true}
+          target_id: {type: string, required: true}
+          patent_number: {type: string, required: true}
+          patent_holder: {type: string, required: true}
+          expiry_date: {type: string, format: "ISO 8601 date", required: true}
+          scaffold_smarts:
+            type: string
+            required: true
+            description: "SMARTS pattern defining the excluded scaffold."
+          substituent_constraints:
+            type: array
+            required: false
+            description: "Positional substituent rules that narrow the exclusion zone."
+          similarity_threshold:
+            type: number
+            format: "Tanimoto coefficient in [0, 1]"
+            required: false
+            description: "Structural similarity threshold for zone boundary."
+
+# =============================================================================
+# SCHEMA 10: KillSwitch
+# =============================================================================
+# Campaign-level emergency termination mechanism.
+# Conformance: Level 3 (Full) — REQUIRED
+# =============================================================================
+
+  KillSwitch:
+    conformance_level: 3
+    description: >
+      Emergency termination mechanism that halts an entire campaign when
+      safety-critical conditions are detected. Kill switches are evaluated
+      continuously during pipeline execution. Triggering a kill switch
+      MUST produce an AuditEvent and terminate the campaign immediately.
+    fields:
+      switches:
+        type: array
+        required: true
+        description: "List of kill switch definitions."
+        items:
+          switch_id:
+            type: string
+            format: "KS-NNN"
+            required: true
+          name: {type: string, required: true}
+          description: {type: string, required: true}
+          trigger_condition:
+            type: string
+            required: true
+            description: >
+              Formal condition that activates this switch. MUST be evaluable
+              by the platform governance layer without human intervention.
+          monitored_metric:
+            type: string
+            required: true
+            description: "The metric or property being monitored."
+          threshold: {type: number, required: true}
+          evaluation_frequency:
+            type: string
+            required: true
+            description: "How often this switch is evaluated (e.g., per_epoch, per_stage, continuous)."
+          action_on_trigger:
+            type: enum
+            values: ["halt_campaign", "quarantine_batch", "alert_operator", "rollback_iteration"]
+            required: true
+          audit_requirements:
+            type: string
+            required: true
+            description: >
+              What MUST be recorded when this switch triggers. At minimum:
+              AuditEvent with category=policy, the trigger values, and
+              the campaign state at termination.
+    governance_rules:
+      continuous_evaluation: >
+        Kill switches MUST be evaluated at every stage gate and, for
+        RL-related switches, at every optimization epoch.
+      no_override: >
+        Kill switch triggers MUST NOT be overridden by domain agents or
+        application code. Only a new campaign with modified kill switch
+        definitions can proceed past a triggered condition.
+      audit_mandatory: >
+        Every kill switch trigger MUST produce an AuditEvent with
+        category=policy and action=kill_switch_triggered.
+
+# =============================================================================
+# COMPLIANCE AND VALIDATION
+# =============================================================================
+
+compliance:
+  self_assessment:
+    description: >
+      Implementations SHOULD provide a machine-readable compliance report
+      that maps each AIDD-GOV schema to its implementation artifact.
+    recommended_format: "JSON or YAML"
+    recommended_fields:
+      - specification_version
+      - conformance_level_claimed
+      - schemas_implemented
+      - schemas_not_implemented
+      - implementation_artifacts
+      - validation_date
+      - validator_identity
+  governance_report:
+    description: >
+      Implementations at Level 2 or above SHOULD produce a governance
+      report per campaign that includes: all SDRs issued, all kill
+      switch evaluations, constraint violation summary, RL convergence
+      trace, and audit event count by category.
+    recommended_endpoint: "/api/audit/governance-report"
+    recommended_format: "JSON"
+
+# =============================================================================
+# EXTENSIBILITY
+# =============================================================================
+
+extensibility:
+  custom_schemas: >
+    Implementations MAY define additional schemas beyond those in this
+    specification. Custom schemas MUST NOT conflict with AIDD-GOV schema
+    names. RECOMMENDED: prefix custom schemas with an organization
+    identifier (e.g., "ACME_CustomAlert").
+  domain_adaptation: >
+    The reference pipeline (S00-S10) is designed for small-molecule drug
+    discovery. Implementations targeting biologics, peptides, gene therapy,
+    or other modalities MAY define alternative stage sequences while
+    maintaining the governance invariants: ordered stages, SDR gating,
+    platform authority, and immutable audit trail.
+  versioning: >
+    This specification follows Semantic Versioning (semver.org).
+    Breaking changes increment the major version. New optional schemas
+    increment the minor version. Clarifications increment the patch version.
+
+# =============================================================================
+# REFERENCES
+# =============================================================================
+
+references:
+  regulatory:
+    - title: "Using Artificial Intelligence and Machine Learning in the Development of Drug and Biological Products"
+      source: "FDA Draft Guidance, 2023"
+      relevance: "Establishes FDA expectations for AI/ML transparency and auditability"
+    - title: "ICH Q8(R2) Pharmaceutical Development"
+      source: "International Council for Harmonisation"
+      relevance: "Quality-by-Design principles applicable to AI-governed design"
+    - title: "21 CFR Part 11 Electronic Records"
+      source: "FDA"
+      relevance: "Electronic signature and audit trail requirements"
+  scientific:
+    - title: "Lipinski CA et al. Adv Drug Deliv Rev. 1997;23:3-25"
+      relevance: "Foundational drug-likeness constraints (Rule of Five)"
+    - title: "Baell JB, Holloway GA. J Med Chem. 2010;53(7):2719-2740"
+      relevance: "PAINS structural alert filters"
+    - title: "Brenk R et al. ChemMedChem. 2008;3(3):435-444"
+      relevance: "Structural alert filter methodology"
+
+# =============================================================================
+# END OF SPECIFICATION
+# =============================================================================
+# AIDD-GOV v0.1 — Public Draft
+# Copyright 2026 FxMEDUS LLC. Licensed under Apache License 2.0.
+# Patent pending: US Provisional Application 64/018,624, filed March 27, 2026.
+# =============================================================================
