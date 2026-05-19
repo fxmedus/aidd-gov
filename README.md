@@ -4,8 +4,11 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Version: 0.1](https://img.shields.io/badge/Version-0.1%20(Draft)-orange.svg)](AIDD-GOV-SPEC-v0.1.yaml)
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0001--9929--3135-a6ce39?style=flat-square&logo=orcid&logoColor=white)](https://orcid.org/0009-0001-9929-3135)
 
 AIDD-GOV is an open governance specification for AI-driven drug discovery pipelines. It defines machine-readable schemas for decision records, stage gates, constraint policies, reward architectures, audit trails, convergence criteria, and kill switches.
+
+**Author:** Julian Borges, MD, MS — Frontier Translational Research Lab, Department of Computer Science, Boston University
 
 ## Why
 
@@ -54,23 +57,51 @@ AIDD-GOV implements the principles of the FDA's January 2025 draft guidance *"Co
 
 Full guidance PDF: https://www.fda.gov/media/167973/download
 
-## Reference Implementation
+## Reference Implementation and Downstream Consumers
 
-[DrugSynthAI](https://github.com/fxmedus/drugsynth-ai) implements AIDD-GOV Level 3 (Full) across three governed discovery campaigns. See the companion publication for details.
+**DrugSynth AI** ([github.com/fxmedus/drugsynth-ai](https://github.com/fxmedus/drugsynth-ai)) implements AIDD-GOV Level 3 (Full) across three governed discovery campaigns targeting mitochondrial therapeutics. The platform operates a 67-agent architecture with 536 tests across 5 tiers, producing dual outputs per stage (machine-readable YAML registries and peer-reviewed IMRAD manuscripts). 10 manuscripts completed, 8 under journal review, 5 ChemRxiv preprints, 10 Zenodo data deposits.
+
+**GeneVector Track** ([github.com/fxmedus/genevector-track](https://github.com/fxmedus/genevector-track)) is a four-paper thesis series that consumes AIDD-GOV governed pipeline outputs. The Therapeutic Candidate Decision Record (TCDR) standard ingests StageDecisionRecords from AIDD-GOV compliant pipelines and transforms them into structured multi-criteria evaluations. The Evidence Readiness Index (ERI) operates downstream of TCDR to optimize experimental investment across evidence gaps identified by the governed pipeline.
+
+| Consumer | Relationship to AIDD-GOV |
+|----------|--------------------------|
+| DrugSynth AI | Reference implementation (Level 3 Full) |
+| TCDR Standard (GeneVector P1) | Consumes SDRs as evaluation input |
+| TCDR Engine (GeneVector P2) | Scores candidates using governed pipeline data |
+| MitoCoreX Case Series (GeneVector P3) | Evaluates 20 candidates from AIDD-GOV compliant campaigns |
+| Evidence Readiness Index (GeneVector P4) | Optimizes gap resolution based on governed evaluation |
+
+## Validation Evidence (Preprints)
+
+| Venue | Title | DOI |
+|-------|-------|-----|
+| ChemRxiv | ADMET Profiling of a Mitochondria-Focused Compound Library | [10.26434/chemrxiv.15001519/v1](https://doi.org/10.26434/chemrxiv.15001519/v1) |
+| ChemRxiv | AI-Assisted De Novo Design of Small Molecule Candidates | [10.26434/chemrxiv.15001592/v1](https://doi.org/10.26434/chemrxiv.15001592/v1) |
+| ChemRxiv | Computational Druggability Assessment of Mitochondrial Targets | [10.26434/chemrxiv.15001595/v1](https://doi.org/10.26434/chemrxiv.15001595/v1) |
+| ChemRxiv | DrugSynthAI Computational Validation | [10.26434/chemrxiv.15001670/v1](https://doi.org/10.26434/chemrxiv.15001670/v1) |
+| ChemRxiv | Pan-Mitochondrial Privileged Scaffolds | [10.26434/chemrxiv.15001671/v1](https://doi.org/10.26434/chemrxiv.15001671/v1) |
+| SSRN | MitoCorex: Validated AI Pipeline for Precision Drug Design | [10.2139/ssrn.6494079](https://doi.org/10.2139/ssrn.6494079) |
+| SSRN | DrugSynth AI: AI Pipeline for De Novo Molecule Design | [10.2139/ssrn.6493958](https://doi.org/10.2139/ssrn.6493958) |
+| Harvard Dataverse | MitoCoreX Compound Library and Validation Data | [10.7910/DVN/WGHUWM](https://doi.org/10.7910/DVN/WGHUWM) |
 
 ## Citation
-
-If you use AIDD-GOV in academic work, please cite:
 
 ```
 Borges J (2026). AIDD-GOV: An Open Governance Standard for AI Drug Discovery.
 Version 0.1. https://github.com/fxmedus/aidd-gov
 
-Borges J (2026). DrugSynthAI: A Governance-First Platform for AI-Governed
-Drug Discovery. [DOI pending]
+Borges J (2026). DrugSynth AI: An AI Pipeline for De Novo Molecule Design
+Targeting Genetically Defined Mitochondrial Defects. SSRN: 10.2139/ssrn.6493958
+
+Borges J (2026). MitoCorex: A Validated AI Pipeline for Precision Drug Design.
+SSRN: 10.2139/ssrn.6494079
 ```
 
 ## License
 
 Apache License 2.0. See [LICENSE](LICENSE) and [PATENT-NOTICE.md](PATENT-NOTICE.md).
+
+---
+
+**Contact:** [jyborges@bu.edu](mailto:jyborges@bu.edu) · [Academic CV](https://julian-borges-md.github.io/research-profile/) · [ORCID](https://orcid.org/0009-0001-9929-3135)
 
