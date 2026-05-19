@@ -8,7 +8,7 @@
 
 AIDD-GOV is an open governance specification for AI-driven drug discovery pipelines. It defines machine-readable schemas for decision records, stage gates, constraint policies, reward architectures, audit trails, convergence criteria, and kill switches.
 
-**Author:** Julian Borges, MD, MS — Frontier Translational Research Lab, Department of Computer Science, Boston University
+**Author:** Julian Borges, MD, MS — Frontier Translational Research Lab (Independent)
 
 ## Why
 
