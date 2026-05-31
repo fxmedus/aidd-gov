@@ -1,0 +1,30 @@
+{
+  "StageDecisionRecord": {
+    "sdr_id": "SDR-0002",
+    "issued_by": "platform.governance.stage_gate_controller",
+    "timestamp": "2026-05-31T04:05:00Z",
+    "campaign_id": "CAMP-DEMO-001",
+    "stage_id": "S06",
+    "agent_evaluated": "AGENT_DEMO_ADMET",
+    "decision": "MAYBE",
+    "criteria_results": [],
+    "integrity": {
+      "checksum": "deadbeef",
+      "formalized_at": "2026-05-31T04:05:01Z"
+    }
+  },
+  "AuditEvent": {
+    "event_id": "not-a-real-event",
+    "timestamp": "2026-05-31T04:05:00Z",
+    "run_id": "RUN-DEMO-2026-0531-0002",
+    "campaign_id": "CAMP-DEMO-001",
+    "stage_id": "S06",
+    "category": "stage",
+    "action": "stage_gate_evaluated"
+  },
+  "StageGatePipeline": {
+    "pipeline_id": "PIPE-DEMO-001",
+    "version": "1.0.0",
+    "stages": "should-be-an-array-not-a-string"
+  }
+}
