@@ -153,3 +153,29 @@ Released under Apache 2.0. AIDD-GOV defines an open governance standard. Impleme
 </p>
 
 <p align="center"><em>Julian Yin Vieira Borges, MD, MS · jyborges@bu.edu</em></p>
+
+## Conformance validation (reference tool)
+
+`tools/aidd_gov_validate.py` is the reference validator. It reads the conformance
+levels and schema field definitions directly from `AIDD-GOV-SPEC-v0.1.yaml`, so it
+never drifts from the standard. No proprietary methods, weights, or scoring logic
+are involved; it checks structural conformance only.
+
+```bash
+# Validate a bundle against a conformance level (1 Core, 2 Standard, 3 Full)
+python3 tools/aidd_gov_validate.py --artifact examples/level1_conformant.json --level 1
+
+# Validate a single record against one schema
+python3 tools/aidd_gov_validate.py --artifact sdr.json --schema StageDecisionRecord
+```
+
+A bundle is a JSON object mapping schema name to instance. Exit code is `0` when
+conformant and `1` otherwise, so the tool drops directly into CI. Worked examples
+live in `examples/` (one conformant, one with planted defects); `tests/` exercises
+both plus level escalation and type checks.
+
+| Level | Name | Required schemas |
+|---|---|---|
+| 1 | Core | StageDecisionRecord, AuditEvent, StageGatePipeline |
+| 2 | Standard | Level 1 + ConstraintPolicy, RewardArchitecture, ConvergenceCriteria |
+| 3 | Full | Level 2 + KillSwitch, ToxicityAlerts, ExclusionZones, ObjectiveDefinitions |
