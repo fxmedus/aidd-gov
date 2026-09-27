@@ -9,10 +9,9 @@ The AIDD-GOV specification (schema definitions, field descriptions, conformance 
 Systems that implement the AIDD-GOV specification using the methods described in the following patent application may be subject to patent protection:
 
 **US Provisional Patent Application 64/018,624**  
-**Title:** AI-Governed Drug Discovery Platform with Stage-Gated Decision Records and Multi-Objective Reinforcement Learning Optimization  
+**Title:** Systems and Methods for Computationally Governed Autonomous Drug Design Using Multi-Agent Artificial Intelligence Architecture with Registry-Mediated Communication and Quality-Gated Stage Progression  
 **Filed:** March 27, 2026  
-**Inventor:** Julian Borges, MD  
-**Assignee:** FxMEDUS LLC  
+**Inventor and applicant of record:** Julian Yin Vieira Borges, MD, MS  
 **Priority Date:** March 27, 2026  
 **Non-Provisional Deadline:** March 27, 2027
 

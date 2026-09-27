@@ -94,7 +94,7 @@ aidd-gov/
 
 ## Reference Implementation and Downstream Consumers
 
-**DrugSynthAI** ([drugsynth.ai](https://drugsynth.ai)) implements AIDD-GOV Level 3 (Full) across three governed discovery campaigns targeting mitochondrial therapeutics. The platform operates a 67-agent architecture with 536 tests across 5 tiers, producing dual outputs per stage (machine-readable YAML registries and peer-reviewed IMRAD manuscripts). 10 manuscripts completed, 8 under journal review, 5 ChemRxiv preprints, 10 Zenodo data deposits.
+**DrugSynthAI** ([drugsynth.ai](https://drugsynth.ai)) implements AIDD-GOV Level 3 (Full) for mitochondrial therapeutics, producing dual outputs per stage (machine-readable YAML registries and IMRAD manuscripts). Live platform figures (agent count, test count, chain-verified completed campaigns) are published by the platform itself at [drugsynth.ai/health](https://drugsynth.ai/health) and are deliberately not restated here.
 
 **GeneVector Track** ([github.com/fxmedus/genevector-track](https://github.com/fxmedus/genevector-track)) is a four-paper thesis series that consumes AIDD-GOV governed pipeline outputs. The TCDR standard ingests StageDecisionRecords from AIDD-GOV compliant pipelines. The ERI operates downstream of TCDR to optimize experimental investment across evidence gaps.
 
