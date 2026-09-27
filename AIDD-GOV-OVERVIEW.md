@@ -125,9 +125,9 @@ AIDD-GOV does not guarantee regulatory compliance. It provides a governance fram
 
 ## 6. Reference Implementation
 
-The first implementation of AIDD-GOV is DrugSynthAI, an AI-governed drug discovery platform developed by FxMEDUS LLC in collaboration with Boston University's Department of Computer Science.
+The first implementation of AIDD-GOV is DrugSynthAI, an AI-governed drug discovery platform developed independently by Julian Yin Vieira Borges, MD, MS.
 
-DrugSynthAI implements AIDD-GOV Level 3 (Full) and has been validated across three governed discovery campaigns targeting mitochondrial therapeutics. The platform's governance architecture, stage gate pipeline, and audit trail system are described in the companion publication.
+DrugSynthAI implements AIDD-GOV Level 3 (Full). Its count of chain-verified completed campaigns is published live at https://drugsynth.ai/health (`campaigns_complete`) rather than restated here. The platform's governance architecture, stage gate pipeline, and audit trail system are described in the companion publication.
 
 Patent pending: US Provisional Application 64/018,624, filed March 27, 2026.
 

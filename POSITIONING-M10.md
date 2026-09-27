@@ -17,7 +17,8 @@ An open, machine-readable governance standard for AI drug discovery pipelines. L
 **Title:** DrugSynthAI: A Governance-First Platform for AI-Governed Drug Discovery  
 **Author:** Julian Borges, MD — FxMEDUS LLC / Boston University, Department of Computer Science  
 **Submission targets:** SSRN ([10.2139/ssrn.6492559](https://doi.org/10.2139/ssrn.6492559)), Briefings in Bioinformatics (journal)  
-**Patent notice:** Patent pending: US Provisional Application 64/018,624, filed March 27, 2026.
+**Patent notice:** Patent pending: US Provisional Application 64/018,624, filed March 27, 2026.  
+**Status note (2026-09-27):** platform figures quoted below describe the M10 manuscript as drafted in March 2026; current figures are published at https://drugsynth.ai/health and supersede them.
 
 The paper describes the reference implementation of AIDD-GOV within the DrugSynthAI platform, including the 67-agent architecture (5 tiers, 536 tests), the S00-S10 stage gate pipeline, the StageDecisionRecord authority system, and validation results across three governed discovery campaigns targeting mitochondrial therapeutics. The platform has produced 10 manuscripts (8 under journal review), 5 ChemRxiv preprints, 10 SSRN preprints, and 10 Zenodo data deposits.
 
